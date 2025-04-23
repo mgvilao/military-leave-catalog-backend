@@ -183,4 +183,25 @@ app.post("/api/signup", (req, res) => {
   });
 });
 
+// Wipe database
+app.delete("/api/wipe-database", (req, res) => {
+  db.serialize(() => {
+    db.run("DELETE FROM users", (err) => {
+      if(err) {
+        console.error("Error wiping users table: ", err.message);
+        return res.status(500).send("Failed to wipe users table.");
+      }
+    });
+
+    db.run("DELETE FROM personnel", (err) => {
+      if(err) {
+        console.error("Error wiping personnel table: ", err.message);
+        return res.status(500).send("Failed to wipe personnel table.");
+      }
+    });
+
+    res.status(200).send("Database records wiped successfully.");
+  });
+});
+
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
