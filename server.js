@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
@@ -6,8 +7,8 @@ const sqlite3 = require("sqlite3").verbose();
 const bodyParser = require("body-parser");
 
 const app = express();
-const PORT = 3001;
-const SECRET = "supersecretkey";
+const PORT = process.env.PORT || 3001;
+const SECRET = process.env.SECRET || "G7gG2s5d4lGcvlVBQk6mmTvSeOXqRaG0xWSN8FlUOrSOX0bPIE4pvaEanz1GMxQs";
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -189,18 +190,20 @@ app.delete("/api/wipe-database", (req, res) => {
     db.run("DELETE FROM users", (err) => {
       if(err) {
         console.error("Error wiping users table: ", err.message);
-        return res.status(500).send("Failed to wipe users table.");
+        res.setHeader('Content-Type', 'application/json'); 
+        return res.status(500).send(JSON.stringify({message: 'Failed to wipe users table.'}));
       }
     });
 
     db.run("DELETE FROM personnel", (err) => {
       if(err) {
         console.error("Error wiping personnel table: ", err.message);
-        return res.status(500).send("Failed to wipe personnel table.");
+        res.setHeader('Content-Type', 'application/json'); 
+        return res.status(500).send(JSON.stringify({message: 'Failed to wipe personnel table.'}));
       }
     });
 
-    res.status(200).send("Database records wiped successfully.");
+    return res.status(200).send(JSON.stringify({message: 'Database successfully wiped.'}));
   });
 });
 
