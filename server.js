@@ -51,8 +51,6 @@ db.serialize(() => {
 
     const columnExists = columns.some((col) => col.name === "nip");
     if (!columnExists) {
-      console.log("Changing column name from NIP to nip in personnel table...");
-
       // Step 1: Create a new table with the correct schema
       db.run(`CREATE TABLE IF NOT EXISTS personnel_new (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -97,8 +95,6 @@ db.serialize(() => {
             db.run(`ALTER TABLE personnel_new RENAME TO personnel`, (err) => {
               if (err) {
                 console.error("Error renaming new personnel table:", err.message);
-              } else {
-                console.log("Column name changed from NIP to nip successfully.");
               }
             });
           });
