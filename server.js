@@ -181,25 +181,44 @@ app.post("/api/signup", (req, res) => {
 });
 
 // Wipe database
-app.delete("/api/wipe-database", (req, res) => {
-  db.serialize(() => {
-    db.run("DELETE FROM users", (err) => {
-      if(err) {
-        console.error("Error wiping users table: ", err.message);
-        res.setHeader('Content-Type', 'application/json'); 
-        return res.status(500).send(JSON.stringify({message: 'Failed to wipe users table.'}));
-      }
-    });
+app.delete("/api/wipe-database", verifyToken, (req, res) => {
+  db.run("DELETE FROM personnel", (err) => {
+    if (err) return res.status(500).send(err);
+    res.send({ message: "All personnel records deleted successfully." });
+  });
+});
 
-    db.run("DELETE FROM personnel", (err) => {
-      if(err) {
-        console.error("Error wiping personnel table: ", err.message);
-        res.setHeader('Content-Type', 'application/json'); 
-        return res.status(500).send(JSON.stringify({message: 'Failed to wipe personnel table.'}));
-      }
-    });
+// Update personnel
+app.put("/api/personnel/:id", verifyToken, (req, res) => {
+  const { id } = req.params;
+  const p = req.body;
 
-    return res.status(200).send(JSON.stringify({message: 'Database successfully wiped.'}));
+  db.run(
+    `UPDATE personnel SET 
+      nip = ?, fullName = ?, rank = ?, age = ?, dob = ?, placeOfWork = ?, 
+      diagnosis = ?, hospital = ?, restPeriod = ?, restStart = ?, 
+      estimatedReturn = ?, treatment = ? 
+    WHERE id = ?`,
+    [
+      p.nip, p.fullName, p.rank, p.age, p.dob, p.placeOfWork, p.diagnosis,
+      p.hospital, p.restPeriod, p.restStart, p.estimatedReturn, p.treatment, id
+    ],
+    function (err) {
+      if (err) return res.status(500).send(err);
+      if (this.changes === 0) return res.status(404).send({ message: "Record not found." });
+      res.send({ message: "Personnel updated successfully." });
+    }
+  );
+});
+
+// Delete personnel
+app.delete("/api/personnel/:id", verifyToken, (req, res) => {
+  const { id } = req.params;
+
+  db.run(`DELETE FROM personnel WHERE id = ?`, [id], function (err) {
+    if (err) return res.status(500).send(err);
+    if (this.changes === 0) return res.status(404).send({ message: "Record not found." });
+    res.send({ message: "Personnel deleted successfully." });
   });
 });
 
